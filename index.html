@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Animated Resume & Portfolio Builder</title>
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #080c14;
+            --panel-bg: #0f172a;
+            --card-bg: #162032;
+            --border-color: #1e293b;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent-primary: #6366f1;
+            --accent-secondary: #38bdf8;
+            --accent-glow: rgba(99, 102, 241, 0.4);
+            --chip-bg: rgba(99, 102, 241, 0.15);
+            --chip-text: #a5b4fc;
+            --chip-border: rgba(99, 102, 241, 0.3);
+        }
+
+        /* Theme Variants */
+        body.theme-emerald {
+            --bg-main: #061510;
+            --panel-bg: #0a2318;
+            --card-bg: #113826;
+            --border-color: #1b4d35;
+            --text-main: #f0fdf4;
+            --text-muted: #86efac;
+            --accent-primary: #10b981;
+            --accent-secondary: #34d399;
+            --accent-glow: rgba(16, 185, 129, 0.4);
+            --chip-bg: rgba(16, 185, 129, 0.2);
+            --chip-text: #6ee7b7;
+            --chip-border: rgba(16, 185, 129, 0.4);
+        }
+
+        body.theme-sunset {
+            --bg-main: #140a08;
+            --panel-bg: #23120e;
+            --card-bg: #351a14;
+            --border-color: #4d261e;
+            --text-main: #fff7ed;
+            --text-muted: #fdba74;
+            --accent-primary: #f97316;
+            --accent-secondary: #fbbf24;
+            --accent-glow: rgba(249, 115, 22, 0.4);
+            --chip-bg: rgba(249, 115, 22, 0.2);
+            --chip-text: #fcd34d;
+            --chip-border: rgba(249, 115, 22, 0.4);
+        }
+
+        body.theme-light-slate {
+            --bg-main: #f1f5f9;
+            --panel-bg: #ffffff;
+            --card-bg: #f8fafc;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --accent-primary: #0284c7;
+            --accent-secondary: #0d9488;
+            --accent-glow: rgba(2, 132, 199, 0.2);
+            --chip-bg: #e0f2fe;
+            --chip-text: #0369a1;
+            --chip-border: #bae6fd;
+        }
+
+        body.theme-light-navy {
+            --bg-main: #f8fafc;
+            --panel-bg: #ffffff;
+            --card-bg: #f1f5f9;
+            --border-color: #cbd5e1;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent-primary: #1e3a8a;
+            --accent-secondary: #3b82f6;
+            --accent-glow: rgba(30, 58, 138, 0.2);
+            --chip-bg: #dbeafe;
+            --chip-text: #1d4ed8;
+            --chip-border: #bfdbfe;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Top Bar Header */
+        header {
+            background: var(--panel-bg);
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-tools {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 9px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary { background: var(--accent-primary); color: white; }
+        .btn-success { background: #10b981; color: white; }
+        .btn-add { background: var(--accent-primary); color: white; margin-top: 8px; margin-bottom: 15px; width: 100%; justify-content: center; }
+        .btn-danger { background: #ef4444; color: white; padding: 6px 12px; font-size: 0.75rem; border-radius: 6px; margin-top: 8px; }
+        .btn:hover { opacity: 0.9; transform: translateY(-2px); }
+
+        /* Split-screen Layout */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 65px);
+        }
+
+        /* Left Side: Form Controls */
+        .controls-panel {
+            width: 42%;
+            background: var(--panel-bg);
+            padding: 25px;
+            overflow-y: auto;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .dynamic-input-block {
+            background: var(--card-bg);
+            padding: 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            transition: border-color 0.2s;
+            margin-bottom: 6px;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        /* Right Side: Live Interactive Resume Preview */
+        .preview-panel {
+            width: 58%;
+            padding: 30px;
+            overflow-y: auto;
+            background: var(--bg-main);
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Resume Document Container */
+        #resume-paper {
+            width: 100%;
+            max-width: 680px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 35px;
+            color: var(--text-main);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* Profile Header Box */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 25px;
+            margin-bottom: 25px;
+        }
+
+        .avatar-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid var(--accent-primary);
+            box-shadow: 0 0 15px var(--accent-glow);
+            flex-shrink: 0;
+            background: var(--card-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header-info {
+            flex-grow: 1;
+        }
+
+        .resume-name {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 2px;
+        }
+
+        .resume-email {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .resume-title {
+            color: var(--accent-secondary);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .social-row {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .social-links-btns {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .social-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            background: var(--card-bg);
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .social-link-btn:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+
+        .pdf-url-text {
+            display: none;
+            font-size: 0.85rem;
+            margin-top: 3px;
+        }
+
+        .pdf-url-text a {
+            color: var(--accent-secondary);
+            text-decoration: underline;
+            font-weight: 600;
+            word-break: break-all;
+        }
+
+        /* Animated Interactive Section Cards */
+        .animated-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 22px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        /* Hide section container card automatically if there are no items inside */
+        .animated-card:has(.empty-placeholder) {
+            display: none;
+        }
+
+        .item-row {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .item-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
+        .animated-card:hover {
+            border-color: var(--accent-primary);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--accent-glow);
+        }
+
+        .section-title {
+            font-size: 1rem;
+            color: var(--accent-primary);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .resume-bio {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .skills-wrapper, .languages-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .skill-chip {
+            background: var(--chip-bg);
+            color: var(--chip-text);
+            border: 1px solid var(--chip-border);
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Print / PDF Formatting Settings */
+        @media print {
+            body * { visibility: hidden; }
+            .preview-panel, #resume-paper, #resume-paper * { visibility: visible; }
+            .preview-panel { position: absolute; left: 0; top: 0; width: 100%; padding: 0; background: #fff !important; }
+            #resume-paper { border: none; background: #ffffff !important; color: #000000 !important; box-shadow: none; }
+            .resume-name { color: #000000 !important; }
+            .resume-email { color: #4b5563 !important; }
+            .resume-title { color: #0284c7 !important; }
+            .animated-card { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; }
+            .resume-bio { color: #334155 !important; }
+            .section-title { color: #4f46e5 !important; }
+            .skill-chip { background: #e0e7ff !important; color: #3730a3 !important; border: none; }
+            
+            .social-links-btns { display: none !important; }
+            .pdf-url-text { display: block !important; }
+        }
+    </style>
+</head>
+<body class="theme-indigo">
+
+    <header>
+        <div class="logo"><i class="fas fa-magic"></i> Live Resume Builder</div>
+        <div class="header-tools">
+            <button class="btn btn-primary" onclick="exportHTML()"><i class="fas fa-code"></i> Download (.html)</button>
+            <button class="btn btn-success" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> Save PDF</button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Controls Panel (Left Input Form) -->
+        <div class="controls-panel">
+            <!-- Theme Palette Settings placed on the Left Side -->
+            <div class="form-group" style="background: var(--card-bg); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                <label><i class="fas fa-palette"></i> Resume Color Theme</label>
+                <select class="theme-select" id="theme-selector" onchange="changeTheme()" style="margin-bottom:0;">
+                    <option value="theme-indigo">🟣 Indigo Dark</option>
+                    <option value="theme-emerald">🟢 Emerald Tech (Dark)</option>
+                    <option value="theme-sunset">🟠 Sunset Orange (Dark)</option>
+                    <option value="theme-light-slate">☀️ Classic Light Slate</option>
+                    <option value="theme-light-navy">🌊 Corporate Light Navy</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Profile Picture</label>
+                <input type="file" id="input-photo" accept="image/*" onchange="loadPhoto(event)">
+            </div>
+
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="input-name" value="Alex Morgan" oninput="updatePreview()">
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="input-email" value="alex.morgan@example.com" oninput="updatePreview()">
+            </div>
+
+            <div class="form-group">
+                <label>Job Title / Degree</label>
+                <input type="text" id="input-title" value="Full Stack Developer & CSE Student" oninput="updatePreview()">
+            </div>
+
+            <!-- Social Links Dynamic Section -->
+            <div class="form-group">
+                <label>Social Profiles</label>
+                <div id="socials-inputs-container">
+                    <div class="dynamic-input-block">
+                        <select class="social-platform" onchange="updatePreview()">
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="github">GitHub</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="website">Website</option>
+                        </select>
+                        <input type="text" class="social-url-input" value="https://linkedin.com/in/alexmorgan" placeholder="Profile URL" oninput="updatePreview()">
+                        <button type="button" class="btn btn-danger" onclick="removeItem(this)"><i class="fas fa-trash"></i> Remove</button>
+                    </div>
+                    <div class="dynamic-input-block">
+                        <select class="social-platform" onchange="updatePreview()">
+                            <option value="linkedin">LinkedIn</option>
+                            <option value="github" selected>GitHub</option>
+                            <option value="instagram">Instagram</option>
+                            <option value="website">Website</option>
+                        </select>
+                        <input type="text" class="social-url-input" value="https://github.com/alexmorgan" placeholder="Profile URL" oninput="updatePreview()">
+                        <button type="button" class="btn btn-danger" onclick="removeItem(this)"><i class="fas fa-trash"></i> Remove</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-add" onclick="addSocialInput()"><i class="fas fa-plus"></i> Add Social Profile</button>
+            </div>
+
+            <div class="form-group">
+                <label>Short Bio</label>
+                <textarea id="input-bio" rows="3" oninput="updatePreview()">Passionate developer building fast web applications, automation scripts, and interactive software interfaces.</textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Skills (comma separated)</label>
+                <input type="text" id="input-skills" value="HTML5/CSS3, JavaScript, Python, C++, Git, UI Design" oninput="updatePreview()">
+            </div>
+
+            <!-- Dynamic Projects Section -->
+            <div class="form-group">
+                <label>Projects</label>
+                <div id="projects-inputs-container">
+                    <div class="dynamic-input-block">
+                        <input type="text" class="proj-title-input" value="AI Portfolio Generator" placeholder="Project Title" oninput="updatePreview()">
+                        <textarea class="proj-desc-input" rows="2" placeholder="Project Description" oninput="updatePreview()">Built an interactive web platform enabling non-coders to generate and export tailored resume websites in real-time.</textarea>
+                        <button type="button" class="btn btn-danger" onclick="removeItem(this)"><i class="fas fa-trash"></i> Remove</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-add" onclick="addProjectInput()"><i class="fas fa-plus"></i> Add Project</button>
+            </div>
+
+            <!-- Dynamic Certifications Section -->
+            <div class="form-group">
+                <label>Certifications (PDF/PNG Proofs)</label>
+                <div id="certs-inputs-container">
+                    <div class="dynamic-input-block">
+                        <input type="text" class="cert-title-input" value="AWS Certified Cloud Practitioner" placeholder="Certification Name & Issuer" oninput="updatePreview()">
+                        <input type="text" class="cert-link-input" value="https://example.com/certificate.pdf" placeholder="Link to Certificate URL" oninput="updatePreview()">
+                        <button type="button" class="btn btn-danger" onclick="removeItem(this)"><i class="fas fa-trash"></i> Remove</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-add" onclick="addCertInput()"><i class="fas fa-plus"></i> Add Certification</button>
+            </div>
+
+            <!-- Dynamic Languages Section -->
+            <div class="form-group">
+                <label>Languages Spoken</label>
+                <div id="langs-inputs-container">
+                    <div class="dynamic-input-block" style="display:flex; gap:8px; align-items:center;">
+                        <input type="text" class="lang-input" value="English (Native)" placeholder="Language & Proficiency" oninput="updatePreview()" style="margin-bottom:0;">
+                        <button type="button" class="btn btn-danger" onclick="removeItem(this)" style="margin-top:0;"><i class="fas fa-trash"></i> Remove</button>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-add" onclick="addLangInput()"><i class="fas fa-plus"></i> Add Language</button>
+            </div>
+
+            <div class="form-group">
+                <label>Education & University</label>
+                <textarea id="input-edu" rows="2" oninput="updatePreview()">B.E. Computer Science and Engineering&#10;Sathyabama Institute of Science and Technology (2024 - Present)</textarea>
+            </div>
+        </div>
+
+        <!-- Live Resume Preview Panel (Right Side) -->
+        <div class="preview-panel">
+            <div id="resume-paper">
+                <!-- Profile Header -->
+                <div class="profile-header">
+                    <div class="avatar-box">
+                        <img id="view-photo" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300" alt="Profile Picture">
+                    </div>
+                    <div class="header-info">
+                        <div class="resume-name" id="view-name">your name</div>
+                        <div class="resume-email" id="view-email"><i class="fas fa-envelope"></i>yourname@example.com</div>
+                        <div class="resume-title" id="view-title">CSE Student</div>
+                        
+                        <div class="social-row">
+                            <div class="social-links-btns" id="view-socials-btns"></div>
+                            <div id="view-pdf-socials"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bio Card -->
+                <div class="animated-card">
+                    <div class="section-title"><i class="fas fa-user"></i> About Me</div>
+                    <p class="resume-bio" id="view-bio">Passionate developer building fast web applications and automation scripts.</p>
+                </div>
+
+                <!-- Skills Card -->
+                <div class="animated-card">
+                    <div class="section-title"><i class="fas fa-code"></i> Technical Skills</div>
+                    <div class="skills-wrapper" id="view-skills"></div>
+                </div>
+
+                <!-- Projects Card -->
+                <div class="animated-card" id="card-projects">
+                    <div class="section-title"><i class="fas fa-rocket"></i> Projects</div>
+                    <div id="view-projects-container"></div>
+                </div>
+
+                <!-- Certifications Card -->
+                <div class="animated-card" id="card-certs">
+                    <div class="section-title"><i class="fas fa-certificate"></i> Certifications</div>
+                    <div id="view-certs-container"></div>
+                </div>
+
+                <!-- Languages Card -->
+                <div class="animated-card" id="card-langs">
+                    <div class="section-title"><i class="fas fa-language"></i> Languages</div>
+                    <div class="languages-wrapper" id="view-langs-container"></div>
+                </div>
+
+                <!-- Education Card -->
+                <div class="animated-card" style="padding: 24px;">
+                    <div class="section-title"><i class="fas fa-graduation-cap"></i> Education</div>
+                    <p style="color:var(--text-main); font-size:0.95rem; line-height:1.6; white-space: pre-line;" id="view-edu"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Profile Image Upload
+        function loadPhoto(event) {
+            const photoImg = document.getElementById('view-photo');
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) { photoImg.src = e.target.result; };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Theme Switcher Handler
+        function changeTheme() {
+            const selectedTheme = document.getElementById('theme-selector').value;
+            document.body.className = selectedTheme;
+        }
+
+        // Completely Remove Entire Input Card Block and Refresh Preview
+        function removeItem(button) {
+            const block = button.closest('.dynamic-input-block');
+            if (block) {
+                block.remove();
+                updatePreview();
+            }
+        }
+
+        // Add Dynamic Social Field
+        function addSocialInput() {
+            const container = document.getElementById('socials-inputs-container');
+            const block = document.createElement('div');
+            block.className = 'dynamic-input-block';
+            block.innerHTML = `
+                <select class="social-platform" onchange="updatePreview()">
+                    <option value="linkedin">LinkedIn</option>
+                    <option value="github">GitHub</option>
+                    <option value="instagram">Instagram</option>
+                    <option value="website">Website</option>
+                </select>
+                <input type="text" class="social-url-input" placeholder="https://..." oninput="updatePreview()">
+                <button type="button" class="btn btn-danger" onclick="removeItem(this)"><i class="fas fa-trash"></i> Remove</button>
+            `;
+            container.appendChild(block);
+            updatePreview();
+        }
+
+        // Add Dynamic Project Field
+        function addProjectInput() {
+            const container = document.getElementById('projects-inputs-container');
+            const block = document.createElement('div');
+            block.className = 'dynamic-input-block';
+            block.innerHTML = `
+                <input type="text" class="proj-title-input" placeholder="Project Title" oninput="updatePreview()">
+                <textarea class="proj-desc-input" rows="2" placeholder="Project Description" oninput="updatePreview()"></textarea>
+                <button type="button" class="btn btn-danger" onclick="removeItem(this)"><i class="fas fa-trash"></i> Remove</button>
+            `;
+            container.appendChild(block);
+            updatePreview();
+        }
+
+        // Add Dynamic Certification Field
+        function addCertInput() {
+            const container = document.getElementById('certs-inputs-container');
+            const block = document.createElement('div');
+            block.className = 'dynamic-input-block';
+            block.innerHTML = `
+                <input type="text" class="cert-title-input" placeholder="Certification Name & Issuer" oninput="updatePreview()">
+                <input type="text" class="cert-link-input" placeholder="Link to PDF/PNG Proof URL" oninput="updatePreview()">
+                <button type="button" class="btn btn-danger" onclick="removeItem(this)"><i class="fas fa-trash"></i> Remove</button>
+            `;
+            container.appendChild(block);
+            updatePreview();
+        }
+
+        // Add Dynamic Language Field
+        function addLangInput() {
+            const container = document.getElementById('langs-inputs-container');
+            const block = document.createElement('div');
+            block.className = 'dynamic-input-block';
+            block.style.display = "flex";
+            block.style.gap = "8px";
+            block.style.alignItems = "center";
+            block.innerHTML = `
+                <input type="text" class="lang-input" placeholder="Language & Proficiency" oninput="updatePreview()" style="margin-bottom:0;">
+                <button type="button" class="btn btn-danger" onclick="removeItem(this)" style="margin-top:0;"><i class="fas fa-trash"></i> Remove</button>
+            `;
+            container.appendChild(block);
+            updatePreview();
+        }
+
+        // Main Real-Time Preview Synchronization
+        function updatePreview() {
+            document.getElementById('view-name').innerText = document.getElementById('input-name').value || "Your Name";
+            
+            const emailVal = document.getElementById('input-email').value;
+            document.getElementById('view-email').innerHTML = emailVal ? `<i class="fas fa-envelope"></i> ${emailVal}` : "";
+            
+            document.getElementById('view-title').innerText = document.getElementById('input-title').value || "Your Title";
+            document.getElementById('view-bio').innerText = document.getElementById('input-bio').value || "";
+            document.getElementById('view-edu').innerText = document.getElementById('input-edu').value || "";
+
+            // Sync Social Links & Icons
+            const socialBtnsContainer = document.getElementById('view-socials-btns');
+            const pdfSocialsContainer = document.getElementById('view-pdf-socials');
+            
+            socialBtnsContainer.innerHTML = '';
+            pdfSocialsContainer.innerHTML = '';
+
+            document.querySelectorAll('.social-platform').forEach((selectElem) => {
+                const platform = selectElem.value;
+                const urlInput = selectElem.parentElement.querySelector('.social-url-input');
+                const url = urlInput ? urlInput.value.trim() : "";
+
+                if (url) {
+                    let iconClass = "fas fa-link";
+                    let labelName = "Profile";
+                    if (platform === 'linkedin') { iconClass = "fab fa-linkedin"; labelName = "LinkedIn"; }
+                    else if (platform === 'github') { iconClass = "fab fa-github"; labelName = "GitHub"; }
+                    else if (platform === 'instagram') { iconClass = "fab fa-instagram"; labelName = "Instagram"; }
+                    else if (platform === 'website') { iconClass = "fas fa-globe"; labelName = "Website"; }
+
+                    const btn = document.createElement('a');
+                    btn.href = url;
+                    btn.target = "_blank";
+                    btn.className = "social-link-btn";
+                    btn.innerHTML = `<i class="${iconClass}"></i> ${labelName}`;
+                    socialBtnsContainer.appendChild(btn);
+
+                    const pdfDiv = document.createElement('div');
+                    pdfDiv.className = "pdf-url-text";
+                    pdfDiv.innerHTML = `<i class="${iconClass}"></i> ${labelName}: <a href="${url}" target="_blank">${url}</a>`;
+                    pdfSocialsContainer.appendChild(pdfDiv);
+                }
+            });
+
+            // Sync Projects
+            const projContainer = document.getElementById('view-projects-container');
+            const projCard = document.getElementById('card-projects');
+            projContainer.innerHTML = '';
+            let projCount = 0;
+
+            document.querySelectorAll('.proj-title-input').forEach((titleInput, index) => {
+                const title = titleInput.value.trim();
+                const descBlocks = document.querySelectorAll('.proj-desc-input');
+                const desc = descBlocks[index] ? descBlocks[index].value.trim() : "";
+
+                if (title || desc) {
+                    projCount++;
+                    const item = document.createElement('div');
+                    item.className = 'item-row';
+                    item.innerHTML = `
+                        <h4 style="color:var(--text-main); font-size:1.05rem;">${title}</h4>
+                        <p style="color:var(--text-muted); font-size:0.9rem; margin-top:4px; line-height:1.5;">${desc}</p>
+                    `;
+                    projContainer.appendChild(item);
+                }
+            });
+            projCard.style.display = projCount === 0 ? 'none' : 'block';
+
+            // Sync Certifications
+            const certContainer = document.getElementById('view-certs-container');
+            const certCard = document.getElementById('card-certs');
+            certContainer.innerHTML = '';
+            let certCount = 0;
+
+            document.querySelectorAll('.cert-title-input').forEach((titleInput, index) => {
+                const title = titleInput.value.trim();
+                const linkBlocks = document.querySelectorAll('.cert-link-input');
+                const link = linkBlocks[index] ? linkBlocks[index].value.trim() : "";
+
+                if (title) {
+                    certCount++;
+                    const item = document.createElement('div');
+                    item.className = 'item-row';
+                    item.innerHTML = `
+                        <h4 style="color:var(--text-main); font-size:1.05rem;">${title}</h4>
+                        ${link ? `<a href="${link}" target="_blank" style="color:var(--accent-secondary); font-size:0.85rem; text-decoration:underline; display:inline-block; margin-top:3px;"><i class="fas fa-external-link-alt"></i> View Certificate (PDF/PNG Proof)</a>` : ''}
+                    `;
+                    certContainer.appendChild(item);
+                }
+            });
+            certCard.style.display = certCount === 0 ? 'none' : 'block';
+
+            // Sync Languages
+            const langContainer = document.getElementById('view-langs-container');
+            const langCard = document.getElementById('card-langs');
+            langContainer.innerHTML = '';
+            let langCount = 0;
+
+            document.querySelectorAll('.lang-input').forEach(langInput => {
+                const lang = langInput.value.trim();
+                if (lang) {
+                    langCount++;
+                    const badge = document.createElement('span');
+                    badge.className = 'skill-chip';
+                    badge.innerText = lang;
+                    langContainer.appendChild(badge);
+                }
+            });
+            langCard.style.display = langCount === 0 ? 'none' : 'block';
+
+            // Sync Skills
+            const rawSkills = document.getElementById('input-skills').value.split(',');
+            const skillsContainer = document.getElementById('view-skills');
+            skillsContainer.innerHTML = '';
+            rawSkills.forEach(skill => {
+                if(skill.trim()) {
+                    const badge = document.createElement('span');
+                    badge.className = 'skill-chip';
+                    badge.innerText = skill.trim();
+                    skillsContainer.appendChild(badge);
+                }
+            });
+        }
+
+        updatePreview();
+
+        // Download Web App (.html)
+        function exportHTML() {
+            const paperContent = document.getElementById('resume-paper').outerHTML;
+            const fullHTML = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Resume</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+        body { background:#080c14; color:#f3f4f6; min-height:100vh; padding:40px 20px; display:flex; justify-content:center; }
+        #resume-paper { width:100%; max-width:680px; background:#0f172a; border:1px solid #1e293b; border-radius:16px; padding:35px; box-shadow:0 10px 30px rgba(0,0,0,0.5); }
+        .profile-header { display:flex; align-items:center; gap:25px; border-bottom:1px solid #1e293b; padding-bottom:25px; margin-bottom:25px; }
+        .avatar-box { width:100px; height:100px; border-radius:50%; overflow:hidden; border:3px solid #6366f1; flex-shrink:0; }
+        .avatar-box img { width:100%; height:100%; object-fit:cover; }
+        .resume-name { font-size:2rem; font-weight:700; color:#ffffff; }
+        .resume-email { color:#9ca3af; font-size:0.85rem; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+        .resume-title { color:#38bdf8; font-size:1rem; font-weight:600; margin-bottom:10px; }
+        .social-row { display:flex; flex-direction:column; gap:6px; }
+        .social-links-btns { display:flex; flex-wrap:wrap; gap:10px; }
+        .social-link-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; background:#1e293b; color:#e2e8f0; text-decoration:none; font-size:0.85rem; border:1px solid #334155; }
+        .animated-card { background:#162032; border:1px solid #1e293b; border-radius:12px; padding:22px; margin-bottom:20px; }
+        .item-row { border-bottom:1px solid #1e293b; padding-bottom:12px; margin-bottom:12px; }
+        .item-row:last-child { border-bottom:none; padding-bottom:0; margin-bottom:0; }
+        .section-title { font-size:1.0rem; color:#818cf8; margin-bottom:12px; display:flex; align-items:center; gap:8px; font-weight:700; text-transform:uppercase; }
+        .skills-wrapper, .languages-wrapper { display:flex; flex-wrap:wrap; gap:8px; }
+        .skill-chip { background:rgba(99,102,241,0.15); color:#a5b4fc; border:1px solid rgba(99,102,241,0.3); padding:5px 14px; border-radius:20px; font-size:0.85rem; }
+    </style>
+</head>
+<body>${paperContent}</body>
+</html>`;
+            const blob = new Blob([fullHTML], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'resume.html';
+            a.click();
+        }
+
+        // Print/Save PDF
+        function exportPDF() { window.print(); }
+    </script>
+</body>
+</html>
