@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume</title>
+    <title>Interactive Animated Resume & Portfolio Builder</title>
     <!-- FontAwesome for LinkedIn, GitHub, and action icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -58,6 +58,8 @@
 
         .btn-primary { background: #6366f1; color: white; }
         .btn-success { background: #10b981; color: white; }
+        .btn-add { background: #3b82f6; color: white; margin-bottom: 15px; width: 100%; justify-content: center; }
+        .btn-danger { background: #ef4444; color: white; padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; margin-top: 6px; }
         .btn:hover { opacity: 0.9; transform: translateY(-2px); }
 
         /* Split-screen Layout */
@@ -79,6 +81,14 @@
             margin-bottom: 18px;
         }
 
+        .project-input-block {
+            background: #1e293b;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            margin-bottom: 12px;
+        }
+
         label {
             display: block;
             font-size: 0.8rem;
@@ -92,7 +102,7 @@
         input, textarea {
             width: 100%;
             padding: 10px 14px;
-            background: #1e293b;
+            background: #0f172a;
             border: 1px solid #334155;
             border-radius: 8px;
             color: white;
@@ -165,7 +175,16 @@
             font-size: 2rem;
             font-weight: 700;
             color: #ffffff;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
+        }
+
+        .resume-email {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
         .resume-title {
@@ -208,8 +227,14 @@
 
         .pdf-url-text {
             display: none;
-            font-size: 0.8rem;
-            color: #38bdf8;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        .pdf-url-text a {
+            color: #2563eb;
+            text-decoration: underline;
+            font-weight: 600;
             word-break: break-all;
         }
 
@@ -225,7 +250,18 @@
             overflow: hidden;
         }
 
-        /* Expanded Education Section Card */
+        .project-item {
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 12px;
+            margin-bottom: 12px;
+        }
+
+        .project-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+            margin-bottom: 0;
+        }
+
         .education-card {
             padding: 26px;
             min-height: 110px;
@@ -277,22 +313,23 @@
             .preview-panel { position: absolute; left: 0; top: 0; width: 100%; padding: 0; background: #fff !important; }
             #resume-paper { border: none; background: #ffffff !important; color: #000000 !important; box-shadow: none; }
             .resume-name { color: #000000 !important; }
+            .resume-email { color: #4b5563 !important; }
             .resume-title { color: #0284c7 !important; }
             .animated-card { background: #f8fafc !important; border: 1px solid #e2e8f0 !important; }
             .resume-bio { color: #334155 !important; }
             .section-title { color: #4f46e5 !important; }
             .skill-chip { background: #e0e7ff !important; color: #3730a3 !important; border: none; }
             
-            /* Show Full URLs on PDF Print */
+            /* Show Hyperlinks Clearly on PDF Print */
             .social-links-btns { display: none !important; }
-            .pdf-url-text { display: block !important; color: #0284c7 !important; font-weight: 600; margin-top: 4px; }
+            .pdf-url-text { display: block !important; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo"><i class="fas fa-magic"></i>Resume Builder</div>
+        <div class="logo"><i class="fas fa-magic"></i> Live Resume Builder</div>
         <div class="export-buttons">
             <button class="btn btn-primary" onclick="exportHTML()"><i class="fas fa-code"></i> Download Web (.html)</button>
             <button class="btn btn-success" onclick="exportPDF()"><i class="fas fa-file-pdf"></i> Save as PDF</button>
@@ -310,6 +347,11 @@
             <div class="form-group">
                 <label>Full Name</label>
                 <input type="text" id="input-name" value="Alex Morgan" oninput="updatePreview()">
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="input-email" value="alex.morgan@example.com" oninput="updatePreview()">
             </div>
 
             <div class="form-group">
@@ -337,14 +379,16 @@
                 <input type="text" id="input-skills" value="HTML5/CSS3, JavaScript, Python, C++, Git, UI Design" oninput="updatePreview()">
             </div>
 
+            <!-- Dynamic Projects Container -->
             <div class="form-group">
-                <label>Featured Project Title</label>
-                <input type="text" id="input-project-title" value="AI Portfolio Generator" oninput="updatePreview()">
-            </div>
-
-            <div class="form-group">
-                <label>Project Description</label>
-                <textarea id="input-project-desc" rows="2" oninput="updatePreview()">Built an interactive web platform enabling non-coders to generate and export tailored resume websites in real-time.</textarea>
+                <label>Projects</label>
+                <div id="projects-inputs-container">
+                    <div class="project-input-block">
+                        <input type="text" class="proj-title-input" value="AI Portfolio Generator" placeholder="Project Title" oninput="updatePreview()" style="margin-bottom:6px;">
+                        <textarea class="proj-desc-input" rows="2" placeholder="Project Description" oninput="updatePreview()">Built an interactive web platform enabling non-coders to generate and export tailored resume websites in real-time.</textarea>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-add" onclick="addProjectInput()"><i class="fas fa-plus"></i> Add Another Project</button>
             </div>
 
             <div class="form-group">
@@ -362,7 +406,8 @@
                         <img id="view-photo" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300" alt="Profile Picture">
                     </div>
                     <div class="header-info">
-                        <div class="resume-name" id="view-name">Full Name</div>
+                        <div class="resume-name" id="view-name">Alex Morgan</div>
+                        <div class="resume-email" id="view-email"><i class="fas fa-envelope"></i> alex.morgan@example.com</div>
                         <div class="resume-title" id="view-title">Full Stack Developer & CSE Student</div>
                         
                         <div class="social-row">
@@ -371,9 +416,9 @@
                                 <a href="#" id="view-linkedin-btn" target="_blank" class="social-link-btn"><i class="fab fa-linkedin"></i> LinkedIn</a>
                                 <a href="#" id="view-github-btn" target="_blank" class="social-link-btn"><i class="fab fa-github"></i> GitHub</a>
                             </div>
-                            <!-- Full Text Links Visible in PDF Mode -->
-                            <div class="pdf-url-text" id="pdf-linkedin-url"><i class="fab fa-linkedin"></i> LinkedIn: https://linkedin.com/in/alexmorgan</div>
-                            <div class="pdf-url-text" id="pdf-github-url"><i class="fab fa-github"></i> GitHub: https://github.com/alexmorgan</div>
+                            <!-- Clickable Active Links Visible in PDF Mode -->
+                            <div class="pdf-url-text" id="pdf-linkedin-url"><i class="fab fa-linkedin"></i> LinkedIn: <a id="pdf-linkedin-link" href="#" target="_blank"></a></div>
+                            <div class="pdf-url-text" id="pdf-github-url"><i class="fab fa-github"></i> GitHub: <a id="pdf-github-link" href="#" target="_blank"></a></div>
                         </div>
                     </div>
                 </div>
@@ -390,11 +435,10 @@
                     <div class="skills-wrapper" id="view-skills"></div>
                 </div>
 
-                <!-- Project Card -->
+                <!-- Multiple Projects Card -->
                 <div class="animated-card">
-                    <div class="section-title"><i class="fas fa-rocket"></i> Featured Project</div>
-                    <h4 style="color:#ffffff; font-size:1.05rem;" id="view-proj-title">AI Portfolio Generator</h4>
-                    <p style="color:#9ca3af; font-size:0.9rem; margin-top:6px; line-height:1.5;" id="view-proj-desc"></p>
+                    <div class="section-title"><i class="fas fa-rocket"></i> Projects</div>
+                    <div id="view-projects-container"></div>
                 </div>
 
                 <!-- Expanded Education Card -->
@@ -420,28 +464,73 @@
             }
         }
 
+        // Add New Project Fields Dynamically
+        function addProjectInput() {
+            const container = document.getElementById('projects-inputs-container');
+            const block = document.createElement('div');
+            block.className = 'project-input-block';
+            block.innerHTML = `
+                <input type="text" class="proj-title-input" placeholder="Project Title" oninput="updatePreview()" style="margin-bottom:6px;">
+                <textarea class="proj-desc-input" rows="2" placeholder="Project Description" oninput="updatePreview()"></textarea>
+                <button type="button" class="btn btn-danger" onclick="removeProjectInput(this)">Remove</button>
+            `;
+            container.appendChild(block);
+            updatePreview();
+        }
+
+        // Remove Project Field
+        function removeProjectInput(button) {
+            button.parentElement.remove();
+            updatePreview();
+        }
+
         // Real-Time Preview Update Function
         function updatePreview() {
             document.getElementById('view-name').innerText = document.getElementById('input-name').value || "Your Name";
+            
+            const emailVal = document.getElementById('input-email').value;
+            document.getElementById('view-email').innerHTML = emailVal ? `<i class="fas fa-envelope"></i> ${emailVal}` : "";
+            
             document.getElementById('view-title').innerText = document.getElementById('input-title').value || "Your Title";
             document.getElementById('view-bio').innerText = document.getElementById('input-bio').value || "";
-            document.getElementById('view-proj-title').innerText = document.getElementById('input-project-title').value || "";
-            document.getElementById('view-proj-desc').innerText = document.getElementById('input-project-desc').value || "";
-            
-            // Multi-line Education Text
             document.getElementById('view-edu').innerText = document.getElementById('input-edu').value || "";
 
-            // Sync Social Media Links
+            // Sync Social Links
             const linkedinUrl = document.getElementById('input-linkedin').value.trim();
             const githubUrl = document.getElementById('input-github').value.trim();
             
-            // Web Link Target URLs
             document.getElementById('view-linkedin-btn').href = linkedinUrl || "#";
             document.getElementById('view-github-btn').href = githubUrl || "#";
 
-            // PDF Text URLs
-            document.getElementById('pdf-linkedin-url').innerHTML = `<i class="fab fa-linkedin"></i> LinkedIn: ${linkedinUrl || "N/A"}`;
-            document.getElementById('pdf-github-url').innerHTML = `<i class="fab fa-github"></i> GitHub: ${githubUrl || "N/A"}`;
+            // Clickable PDF Links
+            const pdfLinkedin = document.getElementById('pdf-linkedin-link');
+            pdfLinkedin.href = linkedinUrl || "#";
+            pdfLinkedin.innerText = linkedinUrl || "N/A";
+
+            const pdfGithub = document.getElementById('pdf-github-link');
+            pdfGithub.href = githubUrl || "#";
+            pdfGithub.innerText = githubUrl || "N/A";
+
+            // Update Multiple Projects in Preview
+            const projTitles = document.querySelectorAll('.proj-title-input');
+            const projDescs = document.querySelectorAll('.proj-desc-input');
+            const viewProjContainer = document.getElementById('view-projects-container');
+            viewProjContainer.innerHTML = '';
+
+            projTitles.forEach((titleInput, index) => {
+                const title = titleInput.value.trim();
+                const desc = projDescs[index] ? projDescs[index].value.trim() : "";
+                
+                if (title || desc) {
+                    const item = document.createElement('div');
+                    item.className = 'project-item';
+                    item.innerHTML = `
+                        <h4 style="color:#ffffff; font-size:1.05rem;">${title}</h4>
+                        <p style="color:#9ca3af; font-size:0.9rem; margin-top:4px; line-height:1.5;">${desc}</p>
+                    `;
+                    viewProjContainer.appendChild(item);
+                }
+            });
 
             // Skills Formatting
             const rawSkills = document.getElementById('input-skills').value.split(',');
@@ -457,7 +546,7 @@
             });
         }
 
-        // Initialize preview on page load
+        // Initialize preview on load
         updatePreview();
 
         // Download Web Application File (.html)
@@ -478,6 +567,7 @@
         .avatar-box { width:100px; height:100px; border-radius:50%; overflow:hidden; border:3px solid #6366f1; box-shadow:0 0 15px rgba(99,102,241,0.4); flex-shrink:0; }
         .avatar-box img { width:100%; height:100%; object-fit:cover; }
         .resume-name { font-size:2rem; font-weight:700; color:#ffffff; }
+        .resume-email { color:#9ca3af; font-size:0.85rem; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
         .resume-title { color:#38bdf8; font-size:1rem; font-weight:600; margin-bottom:10px; }
         .social-row { display:flex; flex-direction:column; gap:6px; }
         .social-links-btns { display:flex; gap:12px; }
@@ -485,6 +575,8 @@
         .social-link-btn:hover { border-color:#818cf8; color:#818cf8; transform:translateY(-2px); }
         .pdf-url-text { display:none; }
         .animated-card { background:#162032; border:1px solid #1e293b; border-radius:12px; padding:22px; margin-bottom:20px; transition:0.3s; }
+        .project-item { border-bottom:1px solid #1e293b; padding-bottom:12px; margin-bottom:12px; }
+        .project-item:last-child { border-bottom:none; padding-bottom:0; margin-bottom:0; }
         .education-card { padding:26px; min-height:110px; }
         .animated-card:hover { border-color:#6366f1; transform:translateY(-3px); box-shadow:0 8px 20px rgba(99,102,241,0.15); }
         .section-title { font-size:1rem; color:#818cf8; margin-bottom:12px; display:flex; align-items:center; gap:8px; font-weight:700; text-transform:uppercase; }
@@ -511,3 +603,4 @@
     </script>
 </body>
 </html>
+
